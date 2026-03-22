@@ -1,6 +1,6 @@
 # ai-framework
 
-## What the framework does
+## Overview
 
 This repository contains a Playwright-based UI test framework that validates key navigation behavior on [playwright.dev](https://playwright.dev/).
 
@@ -12,14 +12,24 @@ Main capabilities:
 - Produces an HTML report and trace artifacts for debugging failed runs.
 - Publishes the Playwright HTML report to GitHub Pages on successful pushes to `main`.
 
-## How to install and run it
+## Quick Start
+
+```bash
+cd ai.test.maintenance
+npm ci
+npx playwright install --with-deps
+npm test
+npm run test:report
+```
+
+## Setup and Usage
 
 ### Prerequisites
 
 - Node.js LTS
 - npm
 
-### Local setup
+### Local Setup
 
 From the repository root:
 
@@ -29,7 +39,7 @@ npm ci
 npx playwright install --with-deps
 ```
 
-### Run tests
+### Run Tests
 
 ```bash
 npm test
@@ -37,13 +47,13 @@ npm test
 
 This runs `playwright test` using the configuration in `playwright.config.ts`.
 
-### Open the HTML report
+### Open the HTML Report
 
 ```bash
 npm run test:report
 ```
 
-## How the project is organized
+## Project Structure
 
 Top-level structure:
 
@@ -61,11 +71,11 @@ Inside `ai.test.maintenance/`:
 - `test-results/`: generated run artifacts (including traces when available).
 - `testcase1.md`: original/manual test case definition.
 
-## Which GitHub Actions are used and when
+## CI/CD (GitHub Actions)
 
 Workflow file: `.github/workflows/playwright-tests.yml`
 
-### Triggers
+### Workflow Triggers
 
 - `pull_request` targeting `main`
 - `push` to `main`
@@ -104,7 +114,7 @@ Workflow file: `.github/workflows/playwright-tests.yml`
      - `actions/upload-pages-artifact@v3`
      - `actions/deploy-pages@v4`
 
-## What is published to Pages
+## GitHub Pages Publication
 
 The workflow publishes the contents of:
 
