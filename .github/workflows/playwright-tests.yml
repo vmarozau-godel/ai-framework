@@ -32,7 +32,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Set up latest LTS Node.js and enable Yarn cache.
+      # Set up latest LTS Node.js and enable npm cache.
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -129,7 +129,7 @@ jobs:
         if: always() && github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v3
         with:
-          path: playwright-report/
+          path: ai.test.maintenance/playwright-report/
 
       # Deploy report site to GitHub Pages.
       - name: Deploy to GitHub Pages
@@ -158,28 +158,32 @@ jobs:
   security-scan:
     runs-on: ubuntu-latest
     continue-on-error: false
+    defaults:
+      run:
+        working-directory: ai.test.maintenance
 
     steps:
       # Check out repository code.
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Set up latest LTS Node.js and enable Yarn cache.
+      # Set up latest LTS Node.js and enable npm cache.
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-          cache: yarn
+          cache: npm
+          cache-dependency-path: ai.test.maintenance/package-lock.json
 
       # Install dependencies with strict lockfile/cache validation.
       - name: Install dependencies
-        run: yarn install --immutable --immutable-cache --check-cache
+        run: npm ci
 
       # Run high/critical dependency vulnerability scan.
       - name: Run dependency audit
         run: |
           set -o pipefail
-          yarn audit --level high --json | tee audit-report.jsonl
+          npm audit --audit-level=high --json | tee audit-report.jsonl
 
       # Publish concise audit summary in the GitHub Actions summary.
       - name: Publish audit summary
