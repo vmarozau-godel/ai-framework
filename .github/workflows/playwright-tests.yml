@@ -62,3 +62,44 @@ jobs:
             test-results/**/trace*.zip
             test-results/**/traces/**
           if-no-files-found: warn
+
+  security-scan:
+    runs-on: ubuntu-latest
+    continue-on-error: false
+
+    steps:
+      # Check out repository code.
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Set up latest LTS Node.js and enable Yarn cache.
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: yarn
+
+      # Install dependencies with strict lockfile/cache validation.
+      - name: Install dependencies
+        run: yarn install --immutable --immutable-cache --check-cache
+
+      # Run high/critical dependency vulnerability scan.
+      - name: Run dependency audit
+        run: |
+          set -o pipefail
+          yarn audit --level high --json | tee audit-report.jsonl
+
+      # Publish concise audit summary in the GitHub Actions summary.
+      - name: Publish audit summary
+        if: always()
+        run: |
+          high_count=$(grep -c '"severity":"high"' audit-report.jsonl || true)
+          critical_count=$(grep -c '"severity":"critical"' audit-report.jsonl || true)
+          total_count=$((high_count + critical_count))
+
+          {
+            echo '## Security Scan Summary'
+            echo "- High vulnerabilities: ${high_count}"
+            echo "- Critical vulnerabilities: ${critical_count}"
+            echo "- Total (high + critical): ${total_count}"
+          } >> "$GITHUB_STEP_SUMMARY"
