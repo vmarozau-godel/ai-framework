@@ -132,6 +132,25 @@ jobs:
         if: always() && github.ref == 'refs/heads/main'
         uses: actions/deploy-pages@v4
 
+      - name: Notify Microsoft Teams on failure
+        if: failure()
+        env:
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          BRANCH_NAME: ${{ github.head_ref }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          payload=$(cat <<EOF
+          {
+            "text": "Playwright workflow failed.\nPR: ${PR_TITLE}\nAuthor: ${PR_AUTHOR}\nBranch: ${BRANCH_NAME}\nRun: ${RUN_URL}"
+          }
+          EOF
+          )
+          curl -sS -X POST "$TEAMS_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "$payload"
+
   security-scan:
     runs-on: ubuntu-latest
     continue-on-error: false
