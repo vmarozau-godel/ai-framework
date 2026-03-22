@@ -18,6 +18,9 @@ jobs:
     timeout-minutes: 30
     env:
       CI: true
+    defaults:
+      run:
+        working-directory: ai.test.maintenance
 
     steps:
       # Check out repository code.
@@ -29,19 +32,20 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-          cache: yarn
+          cache: npm
+          cache-dependency-path: ai.test.maintenance/package-lock.json
 
       # Install dependencies with strict lockfile/cache validation.
       - name: Install dependencies
-        run: yarn install --immutable --immutable-cache --check-cache
+        run: npm ci
 
       # Install Playwright browsers and required system dependencies.
       - name: Install Playwright browsers
-        run: yarn playwright install --with-deps
+        run: npx playwright install --with-deps
 
       # Run Playwright test suite.
       - name: Run Playwright tests
-        run: yarn playwright test
+        run: npx playwright test
 
       # Always upload HTML report, even on failure.
       - name: Upload Playwright HTML report
@@ -49,7 +53,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-html-report
-          path: playwright-report
+          path: ai.test.maintenance/playwright-report
           if-no-files-found: warn
 
       # Always upload Playwright traces for debugging failed tests.
@@ -59,6 +63,6 @@ jobs:
         with:
           name: playwright-traces
           path: |
-            test-results/**/trace*.zip
-            test-results/**/traces/**
+            ai.test.maintenance/test-results/**/trace*.zip
+            ai.test.maintenance/test-results/**/traces/**
           if-no-files-found: warn
